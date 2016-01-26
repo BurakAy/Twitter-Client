@@ -43,7 +43,7 @@ class MicroBlogger
 		if message == ""
 			puts "*** Please enter a message to spam your followers with ***"
 		else
-			followers_list.each { |follower| dm(follower, message) }
+			followers_list.each { |follower| dm(follower, message) } # send a message to all of your followers
 		end
 	end
 
@@ -57,6 +57,7 @@ class MicroBlogger
 			parts = input.split(" ")
 			command = parts[0]
 			
+			# user commands
 			case command
 				when 'q' then puts "Goodbye!"
 				when 't' then tweet(parts[1..-1].join(" "))

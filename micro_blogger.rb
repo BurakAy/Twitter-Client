@@ -1,4 +1,7 @@
 require "jumpstart_auth"
+require 'bitly'
+
+Bitly.use_api_version_3
 
 class MicroBlogger
 	attr_reader :client
@@ -24,7 +27,7 @@ class MicroBlogger
 		  message = "d @#{target} #{message}"
 		  tweet(message)
 		else
-		  puts "You can only DM people who follow you"
+		  puts "You can only direct message people who follow you"
 		end
 	end
 
@@ -36,7 +39,6 @@ class MicroBlogger
 		end
 
 		return screen_names
-	
 	end
 
 	def spam_my_followers(message)
@@ -45,6 +47,25 @@ class MicroBlogger
 		else
 			followers_list.each { |follower| dm(follower, message) } # send a message to all of your followers
 		end
+	end
+
+	def everyones_last_tweet # method for finding the last tweet for each of the people you follow
+		friends = @client.friends.sort_by { |friend| friend.screen_name.downcase }
+		friends.each do |friend|
+			timestamp = friend.status.created_at
+			puts "#{friend.screen_name} said this on #{timestamp.strftime("%A, %b %d")}\n #{friend.status.text}"
+			puts ""
+		end
+	end
+
+	def shorten(original_url)
+		# shortening url
+		bitly = Bitly.new('hungryacademy', 'R_430e9f62250186d2612cca76eee2dbc6')
+		u = bitly.shorten(original_url).short_url
+
+		puts "Shortening this URL: #{original_url}"
+
+		return u
 	end
 
 	def run
@@ -63,6 +84,9 @@ class MicroBlogger
 				when 't' then tweet(parts[1..-1].join(" "))
 				when 'dm' then dm(parts[1], parts[2..-1].join(" "))
 				when 'spam' then spam_my_followers(parts[1..-1].join(" "))
+				when 'last' then everyones_last_tweet
+				when 's' then shorten(parts[-1])
+				when 'turl' then tweet(parts[1..-2].join(" ") + " " + shorten(parts[-1]))
 				else
 					puts "Sorry, I don't know how to #{command}"
 			end
